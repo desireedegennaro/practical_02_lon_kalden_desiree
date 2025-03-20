@@ -1,0 +1,155 @@
+DS 4300
+Amazon EC2 & Lambda
+Mark Fontenot, PhD
+Northeastern University
+Based in part on material from Gareth Eagar’s Data Engineering with AWS, Packt Publishing
+
+EC2
+2
+
+EC2
+EC2 → Elastic Cloud Compute
+Scalable Virtual Computing in the Cloud
+Many (Many!!) instance types available
+Pay-as-you-go model for pricing
+Multiple different Operating Systems
+3
+
+Features of EC2
+Elasticity - easily (and programmatically) scale instances up or down as needed
+You can use one of the standard AMIs OR provide your own AMI if pre-config is needed
+Easily integrates with many other services such as S3, RDS, etc. 
+4
+AMI = Amazon Machine Image
+
+EC2 Lifecycle
+Launch - when starting an instance for the first time with a chosen configuration
+Start/Stop - Temporarily suspend usage without deleting the instance
+Terminate - Permanently delete the instance
+Reboot - Restart an instance without sling the data on the root volume
+5
+
+Where Can You Store Data?
+Instance Store: Temporary, high-speed storage tied to the instance lifecycle
+EFS (Elastic File System) Support - Shared file storage
+EBS (Elastic Block Storage) - Persistent block-level storage
+S3 - large data set storage or EC2 backups even
+6
+
+Common EC2 Use Cases
+Web Hosting - Run a website/web server and associated apps
+Data Processing - It’s a VM… you can do anything to data possible with a programming language.
+Machine Learning - Train models using GPU instances
+Disaster Recovery - Backup critical workloads or infrastructure in the cloud
+7
+
+Let’s Spin Up an EC2 Instance
+8
+
+Let’s Spin Up an EC2 Instance
+9
+
+Let’s Spin Up an EC2 Instance
+10
+
+Ubuntu VM Commands
+Initial user is ubuntu
+Access super user commands with sudo
+Package manager is apt
+kind of like Homebrew or Choco
+Update the packages installed
+sudo apt update; sudo apt upgrade
+11
+
+MiniConda on EC2
+Make sure you’re logged in to your EC2 instance
+Let’s install MiniConda
+curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash ./Miniconda3-latest-Linux-x86_64.sh
+
+12
+
+Installing & Using Streamlit
+Log out of your EC2 instance and log back in
+Make sure pip is now available:
+pip --version
+Install Streamlit and sklearn
+pip install streamlit scikit-learn
+Make a directory for a small web app
+mkdir web
+cd web
+13
+
+Basic Streamlit App
+nano test.py
+Add code on left
+ctrl-x to save and exit
+streamlit run test.py
+14
+import streamlit as st
+
+def main():
+    st.title("Welcome to my Streamlit App")
+
+    st.write("## Data Sets")
+    st.write("""
+        - data set 01
+        - data set 02
+        - data set 03
+    """)
+
+    st.write("\n")
+    st.write("## Goodbye!")
+
+if __name__ == "__main__":
+    main()
+
+
+Opening Up The Streamlit Port
+15
+
+In a Browser
+16
+
+AWS Lambda
+17
+
+Lambdas
+Lambdas provide serverless computing 
+Automatically run code in response to events.
+Relieves you from having to manage servers - only worry about the code
+You only pay for execution time, not for idle compute time (different from EC2)
+18
+
+Lambda Features
+Event-driven execution - can be triggered by many different events in AWS
+Supports a large number of runtimes… Python, Java, Node.js, etc
+HIGHLY integrated with other AWS services
+Extremely scalable and can rapidly adjust to demands
+19
+
+How it Works
+Add/upload your code through AWS MGMT console
+Configure event source(s)
+Watch your Lambda run when one of the event sources fires an event
+20
+
+Let’s Make One
+21
+
+Making a Lambda
+22
+
+Creating a Function
+23
+
+Sample Code
+Edit the code
+Deploy the code!
+24
+
+Test It
+25
+
+??
+26
