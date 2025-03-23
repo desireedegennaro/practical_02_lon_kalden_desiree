@@ -30,11 +30,9 @@ for file in file_list:
 # Initialize the Chroma client with the persist directory
 client = chromadb.Client()
 
-
 # Create a collection (if it doesn't exist)
 collection_name = "4300-chroma"
 collection = client.create_collection(collection_name)
-
 
 documents = list(word_docs.values())
 ids = list(word_docs.keys())
@@ -50,7 +48,7 @@ query_res = collection.query(
     query_texts=[query], # Chroma will embed this for you
     n_results=3 # how many results to return
 )
-
+# print(query_res)
 
 response = ollama.chat(
     model='mistral',
