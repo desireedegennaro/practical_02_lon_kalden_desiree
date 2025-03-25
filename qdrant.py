@@ -1,14 +1,14 @@
 # docker run -d --name qdrant -p 6333:6333 qdrant/qdrant
 # pip install qdrant-client
 
-import redis
+import redis_client
 import ollama
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PointStruct
 
 
 qdrant = QdrantClient("localhost", port=6333)
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis_client.Redis(host='localhost', port=6379, db=0)
 
 keys = r.keys('*')
 documents = {key: r.get(key) for key in keys} 
