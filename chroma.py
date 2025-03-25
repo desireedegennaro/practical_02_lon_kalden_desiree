@@ -27,7 +27,7 @@ def chroma_chat(query, model, word_docs):
             ids=ids,
             # metadatas=metadatas # Optional
         )
-    start_time = time.time
+    start_time = time.time()
     query_res = collection.query(
     query_texts=[query], # Chroma will embed this for you
     n_results=3 # how many results to return
@@ -42,4 +42,4 @@ def chroma_chat(query, model, word_docs):
         ]
     )
 
-    return response['message'], time.time - start_time
+    return response['message'], (time.time() - start_time)
