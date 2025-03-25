@@ -1,155 +1,152 @@
-DS 4300
-Amazon EC2 & Lambda
-Mark Fontenot, PhD
-Northeastern University
-Based in part on material from Gareth Eagar’s Data Engineering with AWS, Packt Publishing
+DS 4300 - Amazon EC2 & Lambda
+Instructor: Mark Fontenot, PhD
+Institution: Northeastern University
+Based on: Data Engineering with AWS by Gareth Eagar
 
-EC2
-2
+Amazon EC2 (Elastic Cloud Compute)
+Overview
+Scalable virtual computing in the cloud
 
-EC2
-EC2 → Elastic Cloud Compute
-Scalable Virtual Computing in the Cloud
-Many (Many!!) instance types available
-Pay-as-you-go model for pricing
-Multiple different Operating Systems
-3
+Wide variety of instance types available
 
-Features of EC2
-Elasticity - easily (and programmatically) scale instances up or down as needed
-You can use one of the standard AMIs OR provide your own AMI if pre-config is needed
-Easily integrates with many other services such as S3, RDS, etc. 
-4
-AMI = Amazon Machine Image
+Pay-as-you-go pricing model
+
+Supports multiple operating systems
+
+Key Features
+Elasticity – Scale instances up/down programmatically
+
+AMIs (Amazon Machine Images) – Use standard AMIs or create custom ones
+
+Integration – Works with S3, RDS, and other AWS services
 
 EC2 Lifecycle
-Launch - when starting an instance for the first time with a chosen configuration
-Start/Stop - Temporarily suspend usage without deleting the instance
-Terminate - Permanently delete the instance
-Reboot - Restart an instance without sling the data on the root volume
-5
+Launch – Start an instance with a specific configuration
 
-Where Can You Store Data?
-Instance Store: Temporary, high-speed storage tied to the instance lifecycle
-EFS (Elastic File System) Support - Shared file storage
-EBS (Elastic Block Storage) - Persistent block-level storage
-S3 - large data set storage or EC2 backups even
-6
+Start/Stop – Pause without deleting
+
+Terminate – Permanently delete
+
+Reboot – Restart without losing root volume data
+
+Storage Options
+Instance Store – Temporary, high-speed storage tied to the instance lifecycle
+
+EFS (Elastic File System) – Shared file storage
+
+EBS (Elastic Block Storage) – Persistent block-level storage
+
+S3 – Large data set storage and EC2 backups
 
 Common EC2 Use Cases
-Web Hosting - Run a website/web server and associated apps
-Data Processing - It’s a VM… you can do anything to data possible with a programming language.
-Machine Learning - Train models using GPU instances
-Disaster Recovery - Backup critical workloads or infrastructure in the cloud
-7
+Web Hosting – Run websites and web apps
 
-Let’s Spin Up an EC2 Instance
-8
+Data Processing – Perform computations
 
-Let’s Spin Up an EC2 Instance
-9
+Machine Learning – Train models with GPU instances
 
-Let’s Spin Up an EC2 Instance
-10
+Disaster Recovery – Backup critical workloads
+
+Setting Up an EC2 Instance
+Launch an EC2 instance
+
+Connect via SSH
+
+Install necessary packages
 
 Ubuntu VM Commands
-Initial user is ubuntu
-Access super user commands with sudo
-Package manager is apt
-kind of like Homebrew or Choco
-Update the packages installed
-sudo apt update; sudo apt upgrade
-11
+Default user: ubuntu
 
-MiniConda on EC2
-Make sure you’re logged in to your EC2 instance
-Let’s install MiniConda
+Superuser commands: sudo
+
+Package manager: apt
+
+Update system:
+
+sh
+Copy
+Edit
+sudo apt update; sudo apt upgrade
+Installing MiniConda on EC2
+sh
+Copy
+Edit
 curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ./Miniconda3-latest-Linux-x86_64.sh
-
-12
-
 Installing & Using Streamlit
-Log out of your EC2 instance and log back in
-Make sure pip is now available:
-pip --version
-Install Streamlit and sklearn
-pip install streamlit scikit-learn
-Make a directory for a small web app
-mkdir web
-cd web
-13
+Log out and log back in
 
-Basic Streamlit App
-nano test.py
-Add code on left
-ctrl-x to save and exit
-streamlit run test.py
-14
+Verify pip:
+
+sh
+Copy
+Edit
+pip --version
+Install dependencies:
+
+sh
+Copy
+Edit
+pip install streamlit scikit-learn
+Create a project folder:
+
+sh
+Copy
+Edit
+mkdir web && cd web
+Create a Streamlit app (test.py):
+
+python
+Copy
+Edit
 import streamlit as st
 
 def main():
     st.title("Welcome to my Streamlit App")
-
     st.write("## Data Sets")
     st.write("""
         - data set 01
         - data set 02
         - data set 03
     """)
-
     st.write("\n")
     st.write("## Goodbye!")
 
 if __name__ == "__main__":
     main()
+Run the app:
 
-
-Opening Up The Streamlit Port
-15
-
-In a Browser
-16
-
+sh
+Copy
+Edit
+streamlit run test.py
 AWS Lambda
-17
+Overview
+Serverless computing – Runs code in response to events
 
-Lambdas
-Lambdas provide serverless computing 
-Automatically run code in response to events.
-Relieves you from having to manage servers - only worry about the code
-You only pay for execution time, not for idle compute time (different from EC2)
-18
+No server management – Only focus on code
+
+Cost-efficient – Pay only for execution time
 
 Lambda Features
-Event-driven execution - can be triggered by many different events in AWS
-Supports a large number of runtimes… Python, Java, Node.js, etc
-HIGHLY integrated with other AWS services
-Extremely scalable and can rapidly adjust to demands
-19
+Event-driven execution – Triggered by AWS events
 
-How it Works
-Add/upload your code through AWS MGMT console
-Configure event source(s)
-Watch your Lambda run when one of the event sources fires an event
-20
+Supports multiple runtimes – Python, Java, Node.js, etc.
 
-Let’s Make One
-21
+Highly integrated – Works with many AWS services
 
-Making a Lambda
-22
+Scalable – Adjusts dynamically to demand
 
-Creating a Function
-23
+How It Works
+Upload code via AWS Management Console
 
-Sample Code
-Edit the code
-Deploy the code!
-24
+Configure event sources
 
-Test It
-25
+Execute when an event occurs
 
-??
-26
+Creating a Lambda Function
+Define the function
+
+Edit and deploy code
+
+Test execution

@@ -1,48 +1,57 @@
-DS 4300
+DS 4300 - Neo4j
+Instructor: Mark Fontenot, PhD
+Institution: Northeastern University
+Reference: Graph Algorithms - Practical Examples in Apache Spark and Neo4j by Needham and Hodler (O’Reilly Press, 2019)
 
-Neo4j
-Mark Fontenot, PhD
-Northeastern University
-Material referenced from Graph Algorithms - Practical Examples in Apache Spark and Neo4j by Needham and Hodler (O’Reilly Press, 2019) 
+Neo4j Overview
+Graph Database System for transactional & analytical processing
 
-Neo4j
-A Graph Database System that supports both transactional and analytical processing of graph-based data
-Relatively new class of no-sql DBs
-Considered schema optional (one can be imposed)
+Part of the NoSQL database family
+
+Schema-optional (one can be imposed)
+
 Supports various types of indexing
-ACID compliant
-Supports distributed computing 
-Similar: Microsoft CosmoDB, Amazon Neptune
-2
 
-Neo4j - Query Language and Plugins
+ACID-compliant
+
+Distributed computing support
+
+Similar databases: Microsoft CosmosDB, Amazon Neptune
+
+Neo4j Query Language & Plugins
 Cypher
-Neo4j’s graph query language created in 2011
-Goal: SQL-equivalent language for graph databases
-Provides a visual way of matching patterns and relationships(nodes)-[:CONNECT_TO]->(otherNodes)
-APOC Plugin
-Awesome Procedures on Cypher
-Add-on library that provides hundreds of procedures and functions 
+Neo4j’s graph query language (introduced in 2011)
+
+SQL-equivalent for graph databases
+
+Uses visual pattern matching for relationships:
+
+cypher
+Copy
+Edit
+(nodes)-[:CONNECT_TO]->(otherNodes)
+APOC Plugin (Awesome Procedures on Cypher)
+Adds hundreds of procedures & functions
+
 Graph Data Science Plugin
-provides efficient implementations of common graph algorithms (like the ones we talked about yesterday)
-3
+Efficient graph algorithm implementations
 
 Neo4j in Docker Compose
-4
+Docker Compose Overview
+Multi-container management
 
-Docker Compose
-5
-Supports multi-container management.
-Set-up is declarative - using YAML docker-compose.yaml file
-services
-volumes
-networks, etc. 
-1 command can be used to start, stop, or scale a number of services at one time. 
-Provides a consistent method for producing an identical environment (no more “well… it works on my machine!)
-Interaction is mostly via command line
+Uses declarative YAML (docker-compose.yaml) for setup
 
-docker-compose.yaml
-6
+Defines services, volumes, networks
+
+Single command can start, stop, or scale services
+
+Ensures identical environments across systems
+
+Example docker-compose.yaml for Neo4j
+yaml
+Copy
+Edit
 services:
   neo4j:
     container_name: neo4j
@@ -61,128 +70,143 @@ services:
       - ./neo4j_db/logs:/logs
       - ./neo4j_db/import:/var/lib/neo4j/import
       - ./neo4j_db/plugins:/plugins
-Never put “secrets” in a docker compose file. Use .env files.
+⚠ Never store secrets in docker-compose.yaml. Use .env files instead.
 
-.env Files
-.env files - stores a collection of environment variables
-good way to keep environment variables for different platforms separate
+Environment Variables with .env Files
+Store environment-specific variables separately
+
+Common files:
+
 .env.local
+
 .env.dev
+
 .env.prod
 
-7
+Example .env file:
+
+env
+Copy
+Edit
 NEO4J_PASSWORD=abc123!!!
-.env file
-
 Docker Compose Commands
-To test if you have Docker CLI properly installed, run:   docker --version
-Major Docker Commands
-docker compose up
-docker compose up -d
-docker compose down
-docker compose start
-docker compose stop
-docker compose build
-docker compose build --no-cache
-8
-
-localhost:7474
-9
-
+Command	Description
+docker --version	Check if Docker CLI is installed
+docker compose up	Start services (foreground)
+docker compose up -d	Start services (detached mode)
+docker compose down	Stop and remove containers
+docker compose start	Start stopped services
+docker compose stop	Stop running services
+docker compose build	Build/rebuild containers
+docker compose build --no-cache	Build without using cache
 Neo4j Browser
-10
-https://neo4j.com/docs/browser-manual/current/visual-tour/
-localhost:7474  Then login.
+Open in browser: localhost:7474
 
-Inserting Data by Creating Nodes
+Login with credentials from .env file
+
+Creating Data in Neo4j
+Inserting Nodes
+cypher
+Copy
+Edit
 CREATE (:User {name: "Alice", birthPlace: "Paris"})
 CREATE (:User {name: "Bob", birthPlace: "London"})
 CREATE (:User {name: "Carol", birthPlace: "London"})
 CREATE (:User {name: "Dave", birthPlace: "London"})
 CREATE (:User {name: "Eve", birthPlace: "Rome"})
+Creating Relationships
+cypher
+Copy
+Edit
+MATCH (alice:User {name: "Alice"})
+MATCH (bob:User {name: "Bob"})
+CREATE (alice)-[:KNOWS {since: "2022-12-01"}]->(bob)
+Note: Relationships are directed in Neo4j.
 
-11
-
-Adding an Edge with No Variable Names
-CREATE (:User {name: "Alice", birthPlace: "Paris"})
-CREATE (:User {name: "Bob", birthPlace: "London"})
-
-MATCH (alice:User {name:”Alice”})
-MATCH (bob:User {name: “Bob”})
-CREATE (alice)-[:KNOWS {since: “2022-12-01”}]->(bob)
-12
-Note: Relationships are directed in neo4j. 
-
-Matching
-Which users were born in London?
-
-MATCH (usr:User {birthPlace: “London”})
+Querying Data
+Find Users Born in London
+cypher
+Copy
+Edit
+MATCH (usr:User {birthPlace: "London"})
 RETURN usr.name, usr.birthPlace
-13
-
-Download Dataset and Move to Import Folder
-Clone this repo:https://github.com/PacktPublishing/Graph-Data-Science-with-Neo4j 
-
-In Chapter02/data of data repo, unzip the netflix.zip file 
-
-Copy netflix_titles.csv into the following folder where you put your docker compose file	neo4j_db/neo4j_db/import
-14
-
 Importing Data
-15
+Download & Prepare Dataset
+Clone repo:
 
+sh
+Copy
+Edit
+git clone https://github.com/PacktPublishing/Graph-Data-Science-with-Neo4j
+Unzip netflix.zip (found in Chapter02/data/)
+
+Move netflix_titles.csv to:
+
+bash
+Copy
+Edit
+neo4j_db/neo4j_db/import
 Basic Data Importing
-LOAD CSV WITH HEADERS FROM 'file:///netflix_titles.csv' AS line CREATE(:Movie {    id: line.show_id,     title: line.title,     releaseYear: line.release_year  })
-16
-Type the following into the Cypher Editor in Neo4j Browser
-
-Loading CSVs - General Syntax
+cypher
+Copy
+Edit
+LOAD CSV WITH HEADERS  
+FROM 'file:///netflix_titles.csv' AS line  
+CREATE (:Movie {  
+    id: line.show_id,  
+    title: line.title,  
+    releaseYear: line.release_year  
+})
+Loading CSVs in Neo4j - General Syntax
+cypher
+Copy
+Edit
 LOAD CSV
 [WITH HEADERS]
 FROM 'file:///file_in_import_folder.csv'
 AS line
 [FIELDTERMINATOR ',']
-// do stuffs with 'line'
-
-17
-
-Importing with Directors this Time
-LOAD CSV WITH HEADERS
-FROM 'file:///netflix_titles.csv' AS line
-WITH split(line.director, ",") as directors_list
-UNWIND directors_list AS director_name
+// Process 'line' as needed
+Importing Data with Directors
+Initial Import (Duplicates Allowed)
+cypher
+Copy
+Edit
+LOAD CSV WITH HEADERS  
+FROM 'file:///netflix_titles.csv' AS line  
+WITH split(line.director, ",") AS directors_list  
+UNWIND directors_list AS director_name  
 CREATE (:Person {name: trim(director_name)})
-		But this generates duplicate Person nodes (a director can direct 
-more than 1 movie)
-18
+⚠ Problem: This creates duplicate nodes if a director has multiple movies.
 
-Importing with Directors Merged
+Corrected Import (Avoiding Duplicates)
+cypher
+Copy
+Edit
 MATCH (p:Person) DELETE p
 
-LOAD CSV WITH HEADERS
-FROM 'file:///netflix_titles.csv' AS line
-WITH split(line.director, ",") as directors_list
-UNWIND directors_list AS director_name
+LOAD CSV WITH HEADERS  
+FROM 'file:///netflix_titles.csv' AS line  
+WITH split(line.director, ",") AS directors_list  
+UNWIND directors_list AS director_name  
 MERGE (:Person {name: director_name})
-19
-
-Adding Edges
-LOAD CSV WITH HEADERS
-FROM 'file:///netflix_titles.csv' AS line
-MATCH (m:Movie {id: line.show_id})
-WITH m, split(line.director, ",") as directors_list
-UNWIND directors_list AS director_name
-MATCH (p:Person {name: director_name})
+Creating Relationships
+Link Directors to Movies
+cypher
+Copy
+Edit
+LOAD CSV WITH HEADERS  
+FROM 'file:///netflix_titles.csv' AS line  
+MATCH (m:Movie {id: line.show_id})  
+WITH m, split(line.director, ",") AS directors_list  
+UNWIND directors_list AS director_name  
+MATCH (p:Person {name: director_name})  
 CREATE (p)-[:DIRECTED]->(m)
-
-20
-
-Gut Check
-Let’s check the movie titled Ray:
+Validating Data
+Check for a Specific Movie & Its Director
+cypher
+Copy
+Edit
 MATCH (m:Movie {title: "Ray"})<-[:DIRECTED]-(p:Person)
 RETURN m, p
 
-21
-
-??
-22

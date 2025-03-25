@@ -1,135 +1,141 @@
-DS 4300
+DS 4300 - Introduction to the Graph Data Model
+Instructor: Mark Fontenot, PhD
+Institution: Northeastern University
+Reference: Graph Algorithms - Practical Examples in Apache Spark and Neo4j by Needham and Hodler (O’Reilly Press, 2019)
 
-Introduction to the Graph Data Model
-Mark Fontenot, PhD
-Northeastern University
-Material referenced from Graph Algorithms - Practical Examples in Apache Spark and Neo4j by Needham and Hodler (O’Reilly Press, 2019) 
+What is a Graph Database?
+Data model based on graphs (nodes + edges)
 
-What is a Graph Database
-Data model based on the graph data structure
-Composed of nodes and edges
-edges connect nodes
-each is uniquely identified
-each can contain properties (e.g. name, occupation, etc)
-supports queries based on graph-oriented operations
-traversals
-shortest path
-lots of others
-2
+Nodes represent entities
 
-Where do Graphs Show up?
+Edges represent relationships between nodes
+
+Each node & edge has unique identifiers
+
+Both nodes and edges can store properties (e.g., name, occupation)
+
+Supports graph-oriented queries, such as:
+
+Traversals
+
+Shortest path
+
+Many other graph operations
+
+Where Do Graphs Show Up?
 Social Networks
-yes… things like Instagram,
-but also… modeling social interactions in fields like psychology and sociology
+
+Instagram, Facebook
+
+Modeling social interactions in psychology & sociology
+
 The Web
-it is just a big graph of “pages” (nodes) connected by hyperlinks (edges)
-Chemical and biological data
-systems biology, genetics, etc.
-interaction relationships in chemistry
-3
+
+Web pages = nodes
+
+Hyperlinks = edges
+
+Chemical & Biological Data
+
+Systems biology, genetics
+
+Chemical interaction relationships
 
 Basics of Graphs and Graph Theory
-4
-
-What is a graph?
+What is a Graph?
 Labeled Property Graph
-Composed of a set of node (vertex) objects and relationship (edge) objects
-Labels are used to mark a node as part of a group
-Properties are attributes (think KV pairs) and can exist on nodes and relationships
-Nodes with no associated relationships are OK.  Edges not connected to nodes are not permitted. 
-5
 
-Example
-2 Labels: 
-person  
-car
-4 relationship types:
-Drives
-Owns
-Lives_with
-Married_to
-Properties
-6
+Nodes (vertices) – Represent objects/entities
 
-Paths
-A path is an ordered sequence of nodes connected by edges in which no nodes or edges are repeated. 
-7
-1
-2
-3
-6
-5
-4
-Ex: 1 → 2 → 6 → 5
+Relationships (edges) – Connect nodes
 
-Not a path:
+Labels – Group nodes (e.g., Person, Car)
+
+Properties – Key-value attributes for nodes & edges
+
+Rules:
+
+Nodes without edges are allowed
+
+Edges must always connect two nodes
+
+Example Graph
+Labels:
+
+Person, Car
+
+Relationship Types:
+
+Drives, Owns, Lives_with, Married_to
+
+Paths in Graphs
+Path: Ordered sequence of nodes connected by edges with no repetitions
+
+Example of a Valid Path:
+
+Copy
+Edit
+1 → 2 → 6 → 5
+Invalid Path (Repeats a Node):
+
+Copy
+Edit
 1 → 2 → 6 → 2 → 3
-
 Flavors of Graphs
-Connected (vs. Disconnected) – there is a path between any two nodes in the graph
-Weighted (vs. Unweighted) – edge has a weight property (important for some algorithms)
-Directed (vs. Undirected) – relationships (edges) define a start and end node
-Acyclic (vs. Cyclic) – Graph contains no cycles
-8
+Graph Type	Description
+Connected vs. Disconnected	A graph is connected if there is a path between every node. Otherwise, it's disconnected.
+Weighted vs. Unweighted	Weighted graphs have numerical values on edges (important for algorithms). Unweighted graphs do not.
+Directed vs. Undirected	Directed edges have a start & end node. Undirected edges do not.
+Acyclic vs. Cyclic	Acyclic graphs have no cycles (e.g., trees). Cyclic graphs contain cycles.
+Sparse vs. Dense	Sparse graphs have few edges relative to nodes. Dense graphs have many edges.
+Graph Algorithms - Pathfinding
+Pathfinding: Finding the shortest path between two nodes (if one exists)
 
-Connected vs. Disconnected
-9
+"Shortest" can mean fewest edges or lowest weight
 
-Weighted vs. Unweighted
-10
+Other Pathfinding Algorithms:
 
-Directed vs. Undirected
-11
+Minimum Spanning Tree
 
-Cyclic vs Acyclic
-12
+Cycle Detection
 
-Sparse vs. Dense
-13
+Max/Min Flow
 
-Trees
-14
+Breadth-First Search (BFS) vs. Depth-First Search (DFS)
+BFS: Explores neighbors level by level (good for shortest path)
 
-Types of Graph Algorithms - Pathfinding
-Pathfinding
-finding the shortest path between two nodes, if one exists, is probably the most common operation
-“shortest” means fewest edges or lowest weight
-Average Shortest Path can be used to monitor efficiency and resiliency of networks. 
-Minimum spanning tree, cycle detection, max/min flow… are other types of pathfinding 
-15
+DFS: Explores deepest path first (good for traversing the entire graph)
 
-BFS vs DFS
-16
-
-Shortest Path
-17
-
-Types of Graph Algorithms - Centrality & Community Detection
+Graph Algorithms - Centrality & Community Detection
 Centrality
-determining which nodes are “more important” in a network compared to other nodes
-EX: Social Network Influencers? 
+Determines important nodes in a network
+
+Example: Identifying influencers in a social network
+
 Community Detection
-evaluate clustering or partitioning of nodes of a graph and tendency to strengthen or break apart
-18
+Evaluates clustering or partitioning of nodes
 
-Centrality
-19
+Measures how tightly groups of nodes form
 
-Some Famous Graph Algorithms
-Dijkstra’s Algorithm - single-source shortest path algo for positively weighted graphs
-A* Algorithm -  Similar to Dijkstra’s with added feature of using a heuristic to guide traversal 
-PageRank - measures the importance of each node within a graph based on the number of incoming relationships and the importance of the nodes from those incoming relationships
-20
+Famous Graph Algorithms
+Algorithm	Purpose
+Dijkstra’s Algorithm	Finds single-source shortest paths in positively weighted graphs
+A Algorithm*	Similar to Dijkstra's but uses a heuristic to guide traversal
+PageRank	Measures node importance based on incoming edges (Google’s ranking algorithm)
+Neo4j - A Graph Database System
+Supports both transactional & analytical processing
 
-Neo4j
-A Graph Database System that supports both transactional and analytical processing of graph-based data
-Relatively new class of no-sql DBs
-Considered schema optional (one can be imposed)
-Supports various types of indexing
-ACID compliant
-Supports distributed computing 
-Similar: Microsoft CosmoDB, Amazon Neptune
-21
+NoSQL database (schema-optional)
 
-??
-22
+Various indexing methods
+
+ACID-compliant
+
+Distributed computing support
+
+Similar to:
+
+Microsoft CosmosDB
+
+Amazon Neptune
+

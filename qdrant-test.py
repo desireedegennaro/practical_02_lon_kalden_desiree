@@ -30,7 +30,7 @@ for file in file_list:
 qdrant = QdrantClient("localhost", port=6333)
 
 def generate_embedding(text):
-    response = ollama.embeddings(model="mistral", prompt=text)
+    response = ollama.embeddings(model="llama3.2", prompt=text)
     return response["embedding"]
 
 # Generate embeddings for documents
@@ -53,12 +53,12 @@ qdrant.upload_points(collection_name="qdrant_dbv", points=to_upload)
 # Query and search
 query_text = "What is Redis?"
 qvector = generate_embedding(query_text)
-search_results = qdrant.search(collection_name="qdrant_dbv", query_vector=qvector, limit=5)
+search_results = qdrant.search(collection_name="qdrant_dbv", query_vector=qvector)
 
 for result in search_results:
     print(f"Match: {result.payload['filename']}\nText: {result.payload['text'][:200]}...\nScore: {result.score}\n")
 
 # Generate response with Ollama
 retrieval = "\n\n".join([result.payload["text"] for result in search_results])
-response = ollama.generate(model="mistral", prompt=f"Answer: {query_text}\n\n{retrieval}")
+response = ollama.generate(model="llama3.2", prompt=f"Answer: {query_text}\n\n{retrieval}")
 print("Answer:", response["response"])
