@@ -1,61 +1,124 @@
-DS 4300
-Large Scale Information 
-Storage and Retrieval
+B+ Tree: m = 4
+Initial Setup:
 
-B+ Tree Walkthrough
-Mark Fontenot, PhD
-Northeastern University
 
-2
-B+ Tree : m = 4
-Insert: 42, 21, 63, 89 
-Initially, the first node is a leaf node AND root node. 
-21, 42, … represent keys of some set of K:V pairs
-Leaf nodes store keys and data, although data not shown
-Inserting another key will cause the node to split. 
+Insert values: 42, 21, 63, 89.
 
-3
-B+ Tree : m = 4
-Insert: 35 
-Leaf node needs to split to accommodate 35. New leaf node allocated to the right of existing node
-5/2 values stay in original node; remaining values moved to new node
-Smallest value from new leaf node (42) is copied up to the parent, which needs to be created in this case. It will be an internal node.
 
-4
-B+ Tree : m = 4
-Insert:  10, 27, 96
-The insert process starts at the root node.  The keys of the root node are searched to find out which child node we need to descend to. 
-EX: 10.  Since 10 < 42, we follow the pointer to the left of 42
-Note - none of these new values cause a node to split 
+First node is both a leaf and root node.
 
-5
-B+ Tree : m = 4
-Insert:  30
-Starting at root, we descend to the left-most child (we’ll call curr). 
-curr is a leaf node.  Thus, we insert 30 into curr.
-BUT curr is full.  So we have to split. 
-Create a new node to the right of curr, temporarily called newNode. 
-Insert newNode into the doubly linked list of leaf nodes.
 
-6
-B+ Tree : m = 4
-Insert:  30 cont’d.
-re-distribute the keys
-copy the smallest key (27 in this case) from newNode to parent; rearrange keys and pointers in parent node. 
-Parent of newNode is also root. So, nothing else to do. 
+Keys represent a set of K:V pairs.
 
-7
-B+ Tree : m = 4
-Fast forward to this state of the tree…
-Observation: The root node is full.  
-The next insertion that splits a leaf will cause the root to split, and thus the tree will get 1 level deeper. 
 
-8
-B+ Tree : m = 4
-Insert 37.  Step 1
+Leaf nodes store keys and data (though data not shown).
 
-9
-B+ Tree : m = 4
-Insert 37.  Step 2.
-When splitting an internal node, we move the middle element to the parent (instead of copying it).  
-In this particular tree, that means we have to create a new internal node which is also now the root. 
+
+Inserting another key will cause the node to split.
+
+
+
+B+ Tree: m = 4
+Insert: 35
+
+
+Leaf node splits to accommodate the key 35.
+
+
+New leaf node created to the right of the existing one.
+
+
+5/2 values stay in the original node; the remaining values move to the new node.
+
+
+The smallest value from the new leaf node (42) is copied up to the parent.
+
+
+A new internal node is created as the parent.
+
+
+
+B+ Tree: m = 4
+Insert: 10, 27, 96
+
+
+Insert process starts at the root node.
+
+
+The keys in the root are searched to determine which child node to descend to.
+
+
+Example: For 10, since 10 < 42, follow the pointer to the left of 42.
+
+
+None of these values cause a node to split.
+
+
+
+B+ Tree: m = 4
+Insert: 30
+
+
+Start at the root node and descend to the left-most child (curr).
+
+
+curr is a leaf node, and we insert 30 into it.
+
+
+Since curr is full, it must be split.
+
+
+A new node (newNode) is created to the right of curr.
+
+
+newNode is added to the doubly linked list of leaf nodes.
+
+
+
+B+ Tree: m = 4
+Insert: 30 Continued
+
+
+Redistribute the keys between nodes.
+
+
+The smallest key (27 in this case) from newNode is copied to the parent.
+
+
+Parent of newNode is the root node, so no further changes needed.
+
+
+
+B+ Tree: m = 4
+Tree State Observation:
+
+
+The root node is full.
+
+
+The next insertion that causes a leaf split will cause the root to split.
+
+
+This will result in the tree growing one level deeper.
+
+
+
+B+ Tree: m = 4
+Insert 37 - Step 1
+
+
+The next step in inserting 37 will cause a further modification in the structure of the tree.
+
+
+
+B+ Tree: m = 4
+Insert 37 - Step 2
+
+
+When splitting an internal node, the middle element is moved to the parent (instead of being copied).
+
+
+In this case, a new internal node is created, which becomes the new root.
+
+
+

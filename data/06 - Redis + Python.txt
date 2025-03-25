@@ -1,125 +1,200 @@
-DS 4300
-Redis + Python
-Mark Fontenot, PhD
-Northeastern University
-
 Redis-py
-2
-Redis-py is the standard client for Python.  
-Maintained by the Redis Company itself
+Redis-py:
+
+
+Standard Python client for Redis, maintained by the Redis company.
+
+
 GitHub Repo: redis/redis-py
-In your 4300 Conda Environment:pip install redis
-Value can be any arbitrary data (string, number, JSON object, binary object, etc)
+
+
+Installation in your 4300 Conda environment: pip install redis
+
+
+Value types supported: String, Number, JSON Object, Binary Object, etc.
+
+
 
 Connecting to the Server
-For your Docker deployment, host could be localhost or 127.0.0.1
-Port is the port mapping given when you created the container (probably the default 6379)
-db is the database 0-15 you want to connect to
-decode_responses → data comes back from server as bytes.  Setting this true converter them (decodes) to strings.
-3
+Connection Setup:
+
+
+Host: localhost or 127.0.0.1 (for Docker deployment).
+
+
+Port: Typically the default Redis port 6379 (or mapped port in Docker).
+
+
+db: Select the database (0-15).
+
+
+decode_responses=True: Ensures server response is decoded to strings (not bytes).
+
+
+Example:
+
+ python
+Copy
 import redis
-redis_client = redis.Redis(host=’localhost’, 
-            port=6379, 
-            db=2, 
-            decode_responses=True)
+redis_client = redis.Redis(host='localhost', 
+                            port=6379, 
+                            db=2, 
+                            decode_responses=True)
+
+
 
 Redis Command List
-Full List > here <
-Use Filter to get to command for the particular data structure you’re targeting (list, hash, set, etc.)
-Redis.py Documentation > here <
-The next slides are not meant to be an exhaustive list of commands, only some highlights. Check the documentation for a complete list. 
-4
+Full Command List: Available in the Redis-py documentation.
+
+
+Use the filter to get commands for specific data structures (e.g., list, hash, set).
+
+
+Documentation is not exhaustive in the slides, only highlights are covered.
+
+
 
 String Commands
-# r represents the Redis client object
-r.set(‘clickCount:/abc’, 0)
-val = r.get(‘clickCount:/abc’)
-r.incr(‘clickCount:/abc’)
-ret_val = r.get(‘clickCount:/abc’)
-print(f’click count = {ret_val}’)
+Basic Commands:
 
-5
+
+r.set('clickCount:/abc', 0) - Set key-value pair.
+
+
+val = r.get('clickCount:/abc') - Retrieve value.
+
+
+r.incr('clickCount:/abc') - Increment value.
+
+
+Print result:
+
+ python
+Copy
+print(f'click count = {ret_val}')
+
+
+Example:
+
+ python
+Copy
+redis_client.mset({'key1': 'val1', 'key2': 'val2', 'key3': 'val3'})
+print(redis_client.mget('key1', 'key2', 'key3'))
+# Output: ['val1', 'val2', 'val3']
+
+
 
 String Commands - 2
-# r represents the Redis client object
-redis_client.mset({'key1': 'val1', 
-                   'key2': 'val2', 
-                   'key3': 'val3'})
-print(redis_client.mget('key1', 
-                        'key2', 
-                        'key3'))
-# returns as list [‘val1’, ‘val2’, ‘val3’]
-6
+Common commands include:
 
-String Commands - 3
+
 set(), mset(), setex(), msetnx(), setnx()
+
+
 get(), mget(), getex(), getdel()
+
+
 incr(), decr(), incrby(), decrby()
+
+
 strlen(), append()
-7
 
-List Commands - 1 
-# create list: key = ‘names’
-# values = [‘mark’, ‘sam’, ‘nick’]
-redis_client.rpush('names', 
-                   'mark', 'sam', 'nick')
 
-# prints [‘mark’, ‘sam’, ‘nick’]
-print(redis_client.lrange('names', 0, -1))
 
-8
+List Commands
+Creating Lists:
 
-List Commands - 2 
+
+Example:
+
+ python
+Copy
+redis_client.rpush('names', 'mark', 'sam', 'nick')
+print(redis_client.lrange('names', 0, -1))  # Output: ['mark', 'sam', 'nick']
+
+
+Other Commands:
+
+
 lpush(), lpop(), lset(), lrem()
+
+
 rpush(), rpop()
+
+
 lrange(), llen(), lpos()
-Other commands include moving elements between lists, popping from multiple lists at the same time, etc. 
-9
 
-Hash Commands - 1 
-redis_client.hset('user-session:123',  
-     mapping={'first': 'Sam',
-              'last': 'Uelle',
-              'company': 'Redis',
-              'age': 30
-})
 
-# prints:
-#{'name': 'Sam', 'surname': 'Uelle', 'company': 'Redis', 'age': '30'}
+Other advanced commands for managing list elements and popping from multiple lists.
+
+
+
+Hash Commands
+Setting Hashes:
+
+ python
+Copy
+redis_client.hset('user-session:123', mapping={'first': 'Sam', 'last': 'Uelle', 'company': 'Redis', 'age': 30})
 print(redis_client.hgetall('user-session:123'))
-10
+# Output: {'first': 'Sam', 'last': 'Uelle', 'company': 'Redis', 'age': '30'}
 
-Hash Commands - 2 
+
+Other Hash Commands:
+
+
 hset(), hget(), hgetall()
+
+
 hkeys()
+
+
 hdel(), hexists(), hlen(), hstrlen()
-11
+
+
 
 Redis Pipelines
-Helps avoid multiple related calls to the server → less network overhead
-12
+Pipelines:
+
+
+Helps reduce network overhead by batching commands.
+
+
+Example:
+
+ python
+Copy
 r = redis.Redis(decode_responses=True)
 pipe = r.pipeline()
 
 for i in range(5):
-   pipe.set(f"seat:{i}", f"#{i}")
+    pipe.set(f"seat:{i}", f"#{i}")
 
 set_5_result = pipe.execute()
-print(set_5_result)  # >>> [True, True, True, True, True]
+print(set_5_result)  # Output: [True, True, True, True, True]
 
 pipe = r.pipeline()
-
-# "Chain" pipeline commands together.
 get_3_result = pipe.get("seat:0").get("seat:3").get("seat:4").execute()
-print(get_3_result)  # >>> ['#0', '#3', '#4']
+print(get_3_result)  # Output: ['#0', '#3', '#4']
 
-Redis in Context
-13
+
 
 Redis in ML - Simplified Example
-14
-Source: https://www.featureform.com/post/feature-stores-explained-the-three-common-architectures
+Redis in Data Science/ML:
 
-Redis in DS/ML 
-15
-Source: https://madewithml.com/courses/mlops/feature-store/ 
+
+Example of Redis in Machine Learning for feature stores and storing models.
+
+
+Source: Featureform: Feature Stores Explained
+
+
+
+Redis in DS/ML
+Further Reading:
+
+
+Example from MadeWithML: MLops Feature Store
+
+
+
+

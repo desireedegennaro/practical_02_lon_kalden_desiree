@@ -1,146 +1,202 @@
-DS 4300
-Large Scale Information 
-Storage and Retrieval
+Searching in Databases
+Definition: Searching is one of the most common operations performed by a database system.
 
-Foundations
-Mark Fontenot, PhD
-Northeastern University
 
-Searching
-Searching is the most common operation performed by a database system
-In SQL, the SELECT statement is arguably the most versatile / complex. 
-Baseline for efficiency is Linear Search
+SQL Query: The SELECT statement is arguably the most versatile and complex SQL operation.
+
+
+
+Searching Algorithm: Linear Search
+Baseline for Efficiency: Linear Search is often used as a baseline for efficiency.
+
+
+How it works:
+
+
 Start at the beginning of a list and proceed element by element until:
-You find what you’re looking for
-You get to the last element and haven’t found it
-2
 
-Searching
-Record - A collection of values for attributes of a single entity instance; a row of a table
-Collection - a set of records of the same entity type; a table
-Trivially, stored in some sequential order like a list
-Search Key - A value for an attribute from the entity type 
-Could be >= 1 attribute 
-3
 
-Lists of Records
-If each record takes up x bytes of memory, then for n records, we need n*x bytes of memory. 
-Contiguously Allocated List
-All n*x bytes are allocated as a single “chunk” of memory
-Linked List
-Each record needs x bytes + additional space for 1 or 2 memory addresses
-Individual records are linked together in a type of chain using memory addresses
-4
+You find what you’re looking for.
 
-Contiguous vs Linked
-5
-6 Records Contiguously Allocated - Array
-front
-back
-6 Records Linked by memory addresses - Linked List
-Extra storage for a memory address
 
-Pros and Cons
-Arrays are faster for random access, but slow for inserting anywhere but the end
-Linked Lists are faster for inserting anywhere in the list, but slower for random access
-6
-Insert after 2nd record
-records:
-records:
-5 records had to be moved to make space
-Insert after 2nd record
+You reach the last element and haven’t found it.
 
-Observations:
-Arrays
-fast for random access
-slow for random insertions
-Linked Lists
-slow for random access
-fast for random insertions 
-7
+
+
+Key Terms in Searching
+Record: A collection of values for attributes of a single entity (i.e., a row in a table).
+
+
+Collection: A set of records of the same entity type (i.e., a table).
+
+
+Search Key: A value (or set of values) from an entity's attributes used for searching.
+
+
+
+Types of Record Storage
+Contiguously Allocated List:
+
+
+All records are stored as a single “chunk” of memory.
+
+
+Memory allocation is contiguous.
+
+
+Linked List:
+
+
+Each record takes up memory for the data plus additional space for memory addresses (used to link records together).
+
+
+
+Contiguous vs Linked List Storage
+Contiguously Allocated (Array):
+
+
+Faster for random access.
+
+
+Slow for insertions, especially not at the end of the list.
+
+
+Linked List:
+
+
+Slower for random access (due to traversal of the list).
+
+
+Faster for insertions anywhere in the list.
+
+
+
+Insertion Example:
+Inserting after the 2nd record in an Array:
+
+
+Requires moving all records after the insertion point to make space, which can be slow.
+
+
+Inserting after the 2nd record in a Linked List:
+
+
+Fast insertion without moving other records since only the links need to be adjusted.
+
+
+
+Performance Observations:
+Arrays:
+
+
+Fast for random access.
+
+
+Slow for insertions except at the end.
+
+
+Linked Lists:
+
+
+Slow for random access (linear traversal).
+
+
+Fast for insertions at any point in the list.
+
+
 
 Binary Search
-Input: array of values in sorted order, target value
-Output: the location (index) of where target is located or some value indicating target was not found
-def binary_search(arr, target)
-  left, right = 0, len(arr) - 1
-  while left <= right:
-    mid = (left + right) // 2
-    if arr[mid] == target:
-      return mid  
-    elif arr[mid] < target:
-      left = mid + 1  
-    else:
-      right = mid - 1
-  return -1
-8
-A
-C
-G
-M
-P
-R
-Z
-target = A
-mid
-Since target < arr[mid], we reset right to mid - 1.  
-left
-right
-A
-C
-G
-M
-P
-R
-Z
-target = A
-mid
-left
-right
+Input: A sorted array of values and a target value.
 
-Time Complexity
-Linear Search
-Best case: target is found at the first element; only 1 comparison
-Worst case: target is not in the array; n comparisons
-Therefore, in the worst case, linear search is O(n) time complexity.
-Binary Search
-Best case: target is found at mid; 1 comparison (inside the loop)
-Worst case: target is not in the array; log2 n comparisons
-Therefore, in the worst case, binary search is O(log2n) time complexity.
-9
 
-Back to Database Searching
-Assume data is stored on disk by column id’s value
-Searching for a specific id = fast. 
-But what if we want to search for a specific specialVal? 
-Only option is linear scan of that column
-Can’t store data on disk sorted by both id and specialVal (at the same time)
-data would have to be duplicated → space inefficient 
-10
+Output: The index of the target value or an indication that the target wasn't found.
 
-Back to Database Searching
-Assume data is stored on disk by column id’s value
-Searching for a specific id = fast. 
-But what if we want to search for a specific specialVal? 
-Only option is linear scan of that column
-Can’t store data on disk sorted by both id and specialVal (at the same time)
-data would have to be duplicated → space inefficient 
-11
-We need an external data structure to support faster searching by specialVal than a linear scan.
 
-What do we have in our arsenal?
-An array of tuples (specialVal, rowNumber) sorted by specialVal
-We could use Binary Search to quickly locate a particular specialVal and find its corresponding row in the table
-But, every insert into the table would be like inserting into a sorted array - slow… 
-A linked list of tuples (specialVal, rowNumber) sorted by specialVal
-searching for a specialVal would be slow - linear scan required
-But inserting into the table would theoretically be quick to also add to the list. 
-12
+Binary Search Algorithm (Pseudocode):
+python
+Copy
+def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
 
-Something with Fast Insert and Fast Search?
-Binary Search Tree - a binary tree where every node in the left subtree is less than its parent and every node in the right subtree is greater than its parent. 
-13
-Image from: https://courses.grainger.illinois.edu/cs225/sp2019/notes/bst/
+Example of Binary Search Execution:
 
-To the Board!
-14
+
+Array: [A, C, G, M, P, R, Z]
+
+
+Target: A
+
+
+Midpoint is calculated, and the search proceeds based on comparisons.
+
+
+
+Time Complexity:
+Linear Search:
+
+
+Best case: O(1) - found at the first element.
+
+
+Worst case: O(n) - not found, requiring a scan through all elements.
+
+
+Binary Search:
+
+
+Best case: O(1) - found at the midpoint.
+
+
+Worst case: O(log n) - log2 of the array size comparisons.
+
+
+
+Database Searching Challenges:
+Scenario: If data is stored by ID value, searches for specific ID values are fast.
+
+
+Challenge: Searching for non-ID attributes (like specialVal) requires a linear scan, which is inefficient.
+
+
+Issue with Storage: Storing data in a way that’s sorted by both ID and specialVal would require duplicate data, leading to space inefficiency.
+
+
+
+External Data Structures for Efficient Searching:
+Array of Tuples (specialVal, rowNumber):
+
+
+Pro: Binary search can be applied for fast searching by specialVal.
+
+
+Con: Insertions are slow as the array must remain sorted.
+
+
+Linked List of Tuples (specialVal, rowNumber):
+
+
+Pro: Insertions are fast, as linked lists are flexible with insertions.
+
+
+Con: Searching by specialVal requires a linear scan.
+
+
+
+Optimal Solution: Binary Search Tree (BST)
+Binary Search Tree (BST):
+
+
+A binary tree where each node’s left subtree contains smaller values, and the right subtree contains larger values.
+
+
+It offers efficient search and insertion operations compared to arrays and linked lists.
+

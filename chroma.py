@@ -51,7 +51,7 @@ query_res = collection.query(
 # print(query_res)
 
 response = ollama.chat(
-    model='mistral',
+    model='llama3.2',
     messages= [{'role':'system', 'content':message} for message in query_res['documents'][0]] + [
         {
             'role':'user',
