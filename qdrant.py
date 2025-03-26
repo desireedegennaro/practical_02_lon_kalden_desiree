@@ -3,57 +3,85 @@
 
 import os
 import ollama
+import time
+import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PointStruct
-import time
+from sentence_transformers import SentenceTransformer
 
+# ask for query
 query = input("What is your query?")
 
-def generate_embedding(text, model):
-    response = ollama.embeddings(model=model, prompt=text)
-    return response["embedding"]
+# Function to generate embeddings
+# NOTE: only works with nomic-embed-text and models from Sentence Transformer
+def get_embedding(text: str, model: str = "all-MiniLM-L6-v2") -> list:
+    # nomic-embed-text can be done through ollama where as the others must be done usign Sentence Transformer
+    if model == "nomic-embed-text":
+        response = ollama.embeddings(model=model, prompt=text)
+        return response["embedding"]
+    else:
+        nmodel = SentenceTransformer(model)
+        return nmodel.encode(text).tolist()
 
-def qdrant_chat(query, model, word_docs):
-    # Initialize Qdrant client
+# Function to store embeddings in Qdrant
+def store_embeddings(qdrant, collection_name, word_docs, embed_model):
+    # Generate list of embeddings
+    embeddings = [get_embedding(text, embed_model) for text in word_docs.values()]
+    # Generate list of points from embeddings
+    points = [
+        PointStruct(id=i, vector=embeddings[i], payload={"key": key, "text": word_docs[key]})
+        for i, key in enumerate(word_docs.keys())
+    ]
+    # Insert into the collection
+    qdrant.upsert(collection_name=collection_name, points=points)
+    print("Embeddings stored successfully.")
+
+def qdrant_chat(query, model, word_docs, embed_model):
+    # Create qdrant client
     qdrant = QdrantClient("localhost", port=6333)
 
-    # Generate embeddings for documents
-    vector_data = {key: generate_embedding(value, model) for key, value in word_docs.items()}
-
-    # Create collection in Qdrant if it doesn't exist
-    if not qdrant.collection_exists(collection_name="qdrant_dbv"):
-        qdrant.recreate_collection(
-            collection_name="qdrant_dbv",
-            vectors_config=VectorParams(size=len(vector_data[list(vector_data.keys())[0]]), distance=Distance.COSINE)
-        )
-
-    collection_info = qdrant.get_collection(collection_name="qdrant_dbv")
-    print(collection_info)
-
-    if collection_info.points.total == 0:
-        # Upload embeddings to Qdrant
-        to_upload = [
-            PointStruct(id=idx, vector=vector_data[key], payload={"filename": key, "text": word_docs[key]})
-            for idx, key in enumerate(word_docs.keys())
-        ]
-        qdrant.upload_points(collection_name="qdrant_dbv", points=to_upload)
+    collection_name = "qdrant_collection"
+    
+    # if the collection already exists, delete it to be refilled with the correectly embedded data
+    try:
+        qdrant.delete_collection(collection_name=collection_name)
+    except Exception:
+        pass
+    
+    # create the collection
+    qdrant.recreate_collection(
+        collection_name=collection_name,
+        vectors_config=VectorParams(size=len(get_embedding("test", embed_model)), distance=Distance.COSINE)
+    )
+    
+    # store the embedded data int the collection
+    store_embeddings(qdrant, collection_name, word_docs, embed_model)
+    
+    # start the timer and embed the query then search for the nearest documents to compare
     start_time = time.time()
-    qvector = generate_embedding(query, model)
-    search_results = qdrant.search(collection_name="qdrant_dbv", query_vector=qvector, top=10)
+    query_embedding = get_embedding(query, embed_model)
+    search_results = qdrant.search(
+        collection_name=collection_name, query_vector=query_embedding, limit=3
+    )
 
-    # Generate response with Ollama
-    retrieval = "\n\n".join([result.payload["text"] for result in search_results])
-    response = ollama.generate(model=model, prompt=f"Answer: {query}\n\n{retrieval}")
-    print("Answer:", response["response"])
-    return response["response"], (time.time() - start_time)
+    retrieved_docs = [result.payload["text"] for result in search_results]
+    
+    # giving ollama the closest documents, ask it the query
+    response = ollama.chat(
+        model=model,
+        messages=[{'role': 'system', 'content': doc} for doc in retrieved_docs] + [
+            {'role': 'user', 'content': query}
+        ]
+    )
+    return response['message'], (time.time() - start_time)
 
-# Load text files
+# FOR TESTING
+# NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
 filepath = "data/"
 word_docs = {}
 file_list = os.listdir(filepath)
     
 for file in file_list:
-    words = []
     with open(filepath + file, mode="r", encoding='utf-8') as infile:
         key = '1'
         for line in infile.readlines():
@@ -61,11 +89,12 @@ for file in file_list:
             if line.isnumeric():
                 key = file + ' slide ' + line
                 word_docs[key] = ''
-                
             if key in word_docs:
                 word_docs[key] += line
             else:
                 word_docs[key] = ''
-message, runtime = qdrant_chat(query, model="llama3.2", word_docs=word_docs)
+
+message, runtime = qdrant_chat(query, model="llama3.2", word_docs=word_docs, embed_model="nomic-embed-text")
 print(message, runtime)
+
 
