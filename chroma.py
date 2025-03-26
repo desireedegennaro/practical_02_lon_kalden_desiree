@@ -2,8 +2,8 @@ import chromadb
 import ollama
 import time
 import os
-import numpy as np
 from sentence_transformers import SentenceTransformer
+import tracemalloc
 
 query = input("What is your query?")
 
@@ -52,8 +52,12 @@ def chroma_chat(query, model, word_docs, embed_model):
     if collection.count() == 0:
         store_embeddings(collection, word_docs, embed_model)
 
+    # Start tracking memory usage
+    tracemalloc.start()
+
     # start the timer and embed the query 
     start_time = time.time()
+
     query_embedding = get_embedding(query, embed_model)
 
     # locate the 3 closest documents
@@ -72,7 +76,11 @@ def chroma_chat(query, model, word_docs, embed_model):
         ]
     )
 
-    return response['message'], (time.time() - start_time)
+    # Get memory usage statistics
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    return response['message'], (time.time() - start_time), peak_memory
 
 # Load text files
 # FOR TESTING
@@ -95,5 +103,5 @@ for file in file_list:
                 word_docs[key] += line
             else:
                 word_docs[key] = ''
-message, runtime = chroma_chat(query, model="llama3.2", word_docs=word_docs, embed_model="all-mpnet-base-v2")
-print(message, runtime)
+message, runtime, memory_usage = chroma_chat(query, model="llama3.2", word_docs=word_docs, embed_model="all-mpnet-base-v2")
+print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)

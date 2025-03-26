@@ -5,6 +5,7 @@ import time
 import numpy as np
 from redis.commands.search.query import Query
 from sentence_transformers import SentenceTransformer
+import tracemalloc
 
 query = input("What is your query?")
 
@@ -66,6 +67,9 @@ def redis_chat(query, model, word_docs, embed_model):
         embedding = get_embedding(text, embed_model)
         store_embedding(key, text, embedding, DOC_PREFIX, redis_client)
 
+    # Start tracking memory usage
+    tracemalloc.start()
+
     # begin timer and embed/store the query
     start_time = time.time()
     embedding = get_embedding(query, embed_model)
@@ -91,11 +95,15 @@ def redis_chat(query, model, word_docs, embed_model):
             {'role': 'user', 'content': query}
         ]
     )
-    return response['message'], (time.time() - start_time)
+
+    # Get memory usage statistics
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    return response['message'], (time.time() - start_time), peak_memory
 
 # Load text files
 # FOR TESTING
-# NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
 filepath = "data/"
 word_docs = {}
 file_list = os.listdir(filepath)
@@ -114,5 +122,7 @@ for file in file_list:
                 word_docs[key] += line
             else:
                 word_docs[key] = ''
-message, runtime = redis_chat(query, model="llama3.2", word_docs=word_docs, embed_model="nomic-embed-text")
-print(message, runtime)
+
+# NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
+message, runtime, memory_usage = redis_chat(query, model="llama3.2", word_docs=word_docs, embed_model="nomic-embed-text")
+print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)
