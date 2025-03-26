@@ -1,5 +1,3 @@
-
-
 import os
 
 
@@ -9,6 +7,8 @@ def read_data(chunk_sizes=[200, 500, 1000], overlaps=[0, 50, 100]):
     word_docs = {}
 
     file_list = os.listdir(filepath)
+    word_docs = {}
+
     for file in file_list:
 
         ## Reading in file.
@@ -27,6 +27,8 @@ def read_data(chunk_sizes=[200, 500, 1000], overlaps=[0, 50, 100]):
         while prev_idx < len(file_str):
             if prev_idx+chunk_size >= len(file_str): 
                 chunk = file_str[prev_idx:]
+                word_docs[file+f' chunk{count}'] = chunk
+                break
             else:  
                 chunk = file_str[prev_idx:prev_idx+chunk_size]
             chunks.append(chunk)
