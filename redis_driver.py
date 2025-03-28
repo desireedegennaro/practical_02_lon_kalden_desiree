@@ -7,8 +7,6 @@ from redis.commands.search.query import Query
 from sentence_transformers import SentenceTransformer
 import tracemalloc
 
-query = input("What is your query?")
-
 # Create an index in Redis (from sample code)
 def create_hnsw_index(redis_client, INDEX_NAME, DOC_PREFIX, VECTOR_DIM, DISTANCE_METRIC):
     try:
@@ -48,7 +46,7 @@ def store_embedding(doc_id: str, text: str, embedding: list, DOC_PREFIX, redis_c
             ).tobytes(),  # Store as byte array
         },
     )
-    print(f"Stored embedding for: {text}")
+    print(f"Stored embedding for: {doc_id}")
 
 def redis_chat(query, model, word_docs, embed_model):
     # Initialize Redis connection
@@ -60,13 +58,16 @@ def redis_chat(query, model, word_docs, embed_model):
     DOC_PREFIX = "doc:"
     DISTANCE_METRIC = "COSINE"
 
-    create_hnsw_index(redis_client, INDEX_NAME, DOC_PREFIX, VECTOR_DIM, DISTANCE_METRIC)
+# only create index if redis is empty so we arent recreating it each time
+    if not redis_client.keys(f"{DOC_PREFIX}*"):
+        create_hnsw_index(redis_client, INDEX_NAME, DOC_PREFIX, VECTOR_DIM, DISTANCE_METRIC)
 
-    # Store embeddings in Redis (from sample code)
-    for i, (key, text) in enumerate(word_docs.items()):
-        embedding = get_embedding(text, embed_model)
-        store_embedding(key, text, embedding, DOC_PREFIX, redis_client)
-
+    # sore the embeddings only if redis is empty
+    if not redis_client.keys('*'):
+        for key, text in word_docs.items():
+            clean_text = " ".join(text) if isinstance(text, list) else str(text) 
+            embedding = get_embedding(clean_text, embed_model)
+            store_embedding(key, clean_text, embedding, DOC_PREFIX, redis_client)
     # Start tracking memory usage
     tracemalloc.start()
 
@@ -102,6 +103,28 @@ def redis_chat(query, model, word_docs, embed_model):
 
     return response['message'], (time.time() - start_time), peak_memory
 
+
+
+def query_redis(client, query, embed_model):
+    INDEX_NAME = "embedding_index"
+
+    query_embedding = get_embedding(query, embed_model)
+    q = (
+        Query("*=>[KNN 3 @embedding $vec AS vector_distance]")
+        .sort_by("vector_distance")
+        .return_fields("text", "vector_distance")
+        .dialect(2)
+    )
+    
+    # search
+    res = client.ft(INDEX_NAME).search(q, query_params={"vec": np.array(query_embedding, dtype=np.float32).tobytes()})
+    # just the docs
+    retrieved_docs = [doc.text for doc in res.docs]
+
+    return retrieved_docs
+
+
+"""
 # Load text files
 # FOR TESTING
 filepath = "data/"
@@ -125,4 +148,5 @@ for file in file_list:
 
 # NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
 message, runtime, memory_usage = redis_chat(query, model="llama3.2", word_docs=word_docs, embed_model="nomic-embed-text")
-print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)
+print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)""
+"""
