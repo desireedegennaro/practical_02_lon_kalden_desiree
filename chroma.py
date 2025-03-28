@@ -20,10 +20,10 @@ def get_embedding(text: str, model: str = "sentence-transformers/all-MiniLM-L6-v
 def store_embeddings(collection, word_docs, embed_model):
     """Store document embeddings in ChromaDB."""
     # collect data necessary for adding to the collection
-    documents = word_docs #list(word_docs.values())
+    documents = list(word_docs.values())
     ids = list(word_docs.keys())
     texts = list(word_docs.values())
-    embeddings = [get_embedding(text, embed_model) for text in texts]
+    embeddings = [get_embedding(text, embed_model) for text in word_docs.values()]
   
     # add to the collection
     collection.add(

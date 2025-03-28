@@ -55,7 +55,20 @@ def run_experiment():
             print(f"\nProcessing chunk size {chunk_size}, overlap {overlap}")
 
             # preprocess documents
+            #word_docs = read_data(chunk_sizes=[chunk_size], overlaps=[overlap])
+            # Load document chunks
             word_docs = read_data(chunk_sizes=[chunk_size], overlaps=[overlap])
+
+            # check if embedded in redis already so dont need to store each time
+            existing_keys = set(redis_client.keys("doc:*")) 
+            # already stored
+            new_word_docs = {k: v for k, v in word_docs.items() if f"doc:{k}" not in existing_keys}
+            if not new_word_docs:
+                print("Docs embedded already.")
+            else:
+                print(f"{len(new_word_docs)} left.")
+                word_docs = new_word_docs # only keeping the new docs
+
 
             for embed_model in embedding_models:
                 print(f"\nEmbedding model: {embed_model}")
