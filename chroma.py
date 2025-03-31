@@ -5,7 +5,6 @@ import os
 from sentence_transformers import SentenceTransformer
 import tracemalloc
 
-query = input("What is your query?")
 
 # Function to generate embeddings
 # NOTE: only works with nomic-embed-text and models from Sentence Transformer
@@ -23,11 +22,12 @@ def store_embeddings(collection, word_docs, embed_model):
     # collect data necessary for adding to the collection
     documents = list(word_docs.values())
     ids = list(word_docs.keys())
-    embeddings = [get_embedding(text, embed_model) for text in documents]
-
+    texts = list(word_docs.values())
+    embeddings = [get_embedding(text, embed_model) for text in word_docs.values()]
+  
     # add to the collection
     collection.add(
-        documents=documents,
+        documents=texts,
         ids=ids,
         embeddings=embeddings
     )
@@ -82,6 +82,22 @@ def chroma_chat(query, model, word_docs, embed_model):
 
     return response['message'], (time.time() - start_time), peak_memory
 
+def query_chroma(client, query, embed_model):
+    collection_name = "4300-chroma"
+    collection = client.get_or_create_collection(name=collection_name)
+
+    query_embedding = get_embedding(query, embed_model)
+    # search chroma
+    query_res = collection.query(query_embeddings=[query_embedding], n_results=3)
+    # just get the docs
+    retrieved_docs = query_res["documents"][0] if query_res["documents"] else []
+    
+    return retrieved_docs, query_res["distances"][0] if query_res["documents"] else []
+
+
+
+
+"""
 # Load text files
 # FOR TESTING
 # NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
@@ -104,4 +120,5 @@ for file in file_list:
             else:
                 word_docs[key] = ''
 message, runtime, memory_usage = chroma_chat(query, model="llama3.2", word_docs=word_docs, embed_model="all-mpnet-base-v2")
-print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)
+print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)"
+"""

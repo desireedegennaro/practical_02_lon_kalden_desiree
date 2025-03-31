@@ -10,9 +10,6 @@ from qdrant_client.http.models import Distance, VectorParams, PointStruct
 from sentence_transformers import SentenceTransformer
 import tracemalloc
 
-# ask for query
-query = input("What is your query?")
-
 # Function to generate embeddings
 # NOTE: only works with nomic-embed-text and models from Sentence Transformer
 def get_embedding(text: str, model: str = "all-MiniLM-L6-v2") -> list:
@@ -28,6 +25,7 @@ def get_embedding(text: str, model: str = "all-MiniLM-L6-v2") -> list:
 def store_embeddings(qdrant, collection_name, word_docs, embed_model):
     # Generate list of embeddings
     embeddings = [get_embedding(text, embed_model) for text in word_docs.values()]
+
     # Generate list of points from embeddings
     points = [
         PointStruct(id=i, vector=embeddings[i], payload={"key": key, "text": word_docs[key]})
@@ -84,6 +82,20 @@ def qdrant_chat(query, model, word_docs, embed_model):
 
     return response['message'], (time.time() - start_time), peak_memory
 
+
+def query_qdrant(client, query, embed_model):
+    collection_name = "qdrant_collection"
+    query_embedding = get_embedding(query, embed_model)
+
+    # search
+    search_results = client.search(collection_name=collection_name, query_vector=query_embedding, limit=3)
+# just retrieving the docs
+    retrieved_docs = [result.payload["text"] for result in search_results]
+    
+    return retrieved_docs
+
+
+"""
 # FOR TESTING
 filepath = "data/"
 word_docs = {}
@@ -105,5 +117,5 @@ for file in file_list:
 # NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
 message, runtime, memory_usage = qdrant_chat(query, model="llama3.2", word_docs=word_docs, embed_model="nomic-embed-text")
 print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)
-
+"""
 
