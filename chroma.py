@@ -4,6 +4,7 @@ import time
 import os
 from sentence_transformers import SentenceTransformer
 import tracemalloc
+from Preprocess import read_data
 
 
 # Function to generate embeddings
@@ -96,15 +97,15 @@ def query_chroma(client, query, embed_model):
 
 
 
+query = input("What is your query?")
 
-"""
 # Load text files
 # FOR TESTING
 # NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
 filepath = "data/"
 word_docs = {}
 file_list = os.listdir(filepath)
-    
+'''
 for file in file_list:
     words = []
     with open(filepath + file, mode="r", encoding='utf-8') as infile:
@@ -119,6 +120,7 @@ for file in file_list:
                 word_docs[key] += line
             else:
                 word_docs[key] = ''
+'''
+word_docs = read_data(chunk_sizes=[200], overlaps=[0])
 message, runtime, memory_usage = chroma_chat(query, model="llama3.2", word_docs=word_docs, embed_model="all-mpnet-base-v2")
-print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)"
-"""
+print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)

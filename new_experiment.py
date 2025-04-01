@@ -78,7 +78,5 @@ def run_experiment(db_name):
 def main():
     run_experiment('chroma')
 
-
-if __name__ == '__ main __':
-    main()
+main()
     
