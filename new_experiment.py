@@ -4,9 +4,9 @@ import ollama
 import chromadb
 import redis
 from qdrant_client import QdrantClient
-from chroma import store_embeddings as chroma_chat
-from redis_driver import store_embedding as redis_chat
-from qdrant import store_embeddings as qdrant_chat
+from chroma import chroma_chat
+from redis_driver import redis_chat 
+from qdrant import qdrant_chat 
 from sentence_transformers import SentenceTransformer
 from Preprocess import read_data 
 import pandas as pd
@@ -50,18 +50,18 @@ def run_experiment(db_name):
         func = redis_chat
         export_name = 'results_redis.csv'
 
-
     for chunk_size in CHUNK_SIZES:
         for overlap in OVERLAPS:
             print(f"\nProcessing chunk size {chunk_size}, overlap {overlap}")
 
             #preprocess
-            word_docs = read_data(chunk_sizes=[chunk_size], overlaps=[overlap])
+            word_docs = read_data(chunk_size, overlap)
 
             # going through each model, embedding model, and query for chunk size and overlap
             for model in LLM_MODELS:
                 for embedding_model in EMBEDDING_MODELS:
                     for query in QUERY_TEXTS:
+                        print(func)
                         query_result, run_time, memory = func(query, model, word_docs, embedding_model)
                         print('query:', query)
                         print('embedding_model', embedding_model)
