@@ -6,8 +6,6 @@ from sentence_transformers import SentenceTransformer
 import ollama
 
 
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
-
 # chunking function
 def read_data(chunk_size, overlap):
     filepath = "data/"
@@ -30,9 +28,6 @@ def read_data(chunk_size, overlap):
                 chunk_key = f"{file}_chunk{count}_size{chunk_size}_overlap{overlap}"
                 word_docs[chunk_key] = chunk  # store in word_docs dict
                 
-                # stores redis as hash with text key
-                redis_client.hset(f"doc:{chunk_key}", mapping={"text": chunk})
-
                 count += 1
                 prev_idx = (prev_idx + chunk_size) - overlap
 

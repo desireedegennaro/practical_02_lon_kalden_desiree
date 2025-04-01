@@ -96,9 +96,6 @@ def query_chroma(client, query, embed_model):
     return retrieved_docs, query_res["distances"][0] if query_res["documents"] else []
 
 
-
-query = input("What is your query?")
-
 # Load text files
 # FOR TESTING
 # NOTE: Available embed models include: nomic-embed-text, all-MiniLM-L6-v2, all-mpnet-base-v2
@@ -121,6 +118,7 @@ for file in file_list:
             else:
                 word_docs[key] = ''
 '''
-word_docs = read_data(chunk_sizes=[200], overlaps=[0])
+word_docs = read_data(chunk_size=200, overlap=0)
+query = input("What is your query?")
 message, runtime, memory_usage = chroma_chat(query, model="llama3.2", word_docs=word_docs, embed_model="all-mpnet-base-v2")
 print("Output:", message, "\n Runtime (s):", round(runtime, 2), "\n Maximum Memory Used:", memory_usage)
