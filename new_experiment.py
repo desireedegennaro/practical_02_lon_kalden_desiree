@@ -26,6 +26,9 @@ LLM_MODELS = ["llama2", "mistral"]
 CHUNK_SIZES = [200, 500, 1000]
 OVERLAPS = [0, 50, 100]
 
+CHUNK_SIZES = [200]
+OVERLAPS = [0]
+
 QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
 
 # write CSV headers
@@ -76,6 +79,9 @@ def run_experiment(db_name):
 
 
 def main():
+    # uncomment out the database you want to test, set up the container if redis or qdrant, and run file!
     run_experiment('chroma')
+    # run_experiment('qdrant')
+    # run_experiment('redis')
 main()
     
