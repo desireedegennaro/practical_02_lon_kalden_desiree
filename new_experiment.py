@@ -14,7 +14,7 @@ import pandas as pd
 
 # embedding models to be tested
 EMBEDDING_MODELS = [
-    "nomic-embed-text"
+    "nomic-embed-text",
     "sentence-transformers/all-MiniLM-L6-v2",
     "sentence-transformers/all-mpnet-base-v2"
 ]
