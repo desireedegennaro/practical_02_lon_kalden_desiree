@@ -15,21 +15,18 @@ import pandas as pd
 # embedding models to be tested
 EMBEDDING_MODELS = [
     "nomic-embed-text"
-    #"sentence-transformers/all-MiniLM-L6-v2",
-    #"sentence-transformers/all-mpnet-base-v2"
+    "sentence-transformers/all-MiniLM-L6-v2",
+    "sentence-transformers/all-mpnet-base-v2"
 ]
 
 # llms to be tested
 LLM_MODELS = ["llama2", "mistral"]
 
 # define chunk sizes and overlaps
-#CHUNK_SIZES = [200, 500, 1000]
-#OVERLAPS = [0, 50, 100]
-CHUNK_SIZES = [200]
-OVERLAPS = [0, 50]
+CHUNK_SIZES = [200, 500, 1000]
+OVERLAPS = [0, 50, 100]
 
-#QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
-QUERY_TEXTS = ["What is redis?", "What is an AVL tree?"]
+QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
 
 # write CSV headers
 EXPORT_COLS = [
@@ -80,6 +77,5 @@ def run_experiment(db_name):
 
 def main():
     run_experiment('chroma')
-
 main()
     
