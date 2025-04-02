@@ -46,7 +46,6 @@ def store_embedding(doc_id: str, text: str, embedding: list, DOC_PREFIX, redis_c
             ).tobytes(),  # Store as byte array
         },
     )
-    print(f"Stored embedding for: {doc_id}")
 
 def redis_chat(query, model, word_docs, embed_model):
     # Initialize Redis connection
@@ -58,16 +57,12 @@ def redis_chat(query, model, word_docs, embed_model):
     DOC_PREFIX = "doc:"
     DISTANCE_METRIC = "COSINE"
 
-# only create index if redis is empty so we arent recreating it each time
-    if not redis_client.keys(f"{DOC_PREFIX}*"):
-        create_hnsw_index(redis_client, INDEX_NAME, DOC_PREFIX, VECTOR_DIM, DISTANCE_METRIC)
+    create_hnsw_index(redis_client, INDEX_NAME, DOC_PREFIX, VECTOR_DIM, DISTANCE_METRIC)
 
-    # sore the embeddings only if redis is empty
-    if not redis_client.keys('*'):
-        for key, text in word_docs.items():
-            clean_text = " ".join(text) if isinstance(text, list) else str(text) 
-            embedding = get_embedding(clean_text, embed_model)
-            store_embedding(key, clean_text, embedding, DOC_PREFIX, redis_client)
+    # Store embeddings in Redis (from sample code)
+    for i, (key, text) in enumerate(word_docs.items()):
+        embedding = get_embedding(text, embed_model)
+        store_embedding(key, text, embedding, DOC_PREFIX, redis_client)
     # Start tracking memory usage
     tracemalloc.start()
 

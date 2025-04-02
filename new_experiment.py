@@ -15,13 +15,13 @@ import pandas as pd
 # embedding models to be tested
 EMBEDDING_MODELS = [
     "nomic-embed-text",
-    "sentence-transformers/all-MiniLM-L6-v2",
-    "sentence-transformers/all-mpnet-base-v2"
+    "sentence-transformers/all-MiniLM-L6-v2"
+    #"sentence-transformers/all-mpnet-base-v2"
 ]
 
 # llms to be tested
-LLM_MODELS = ["llama2", "mistral"]
-
+#LLM_MODELS = ["llama2", "mistral"]
+LLM_MODELS = ["llama2"]
 # define chunk sizes and overlaps
 CHUNK_SIZES = [200, 500, 1000]
 OVERLAPS = [0, 50, 100]
@@ -29,8 +29,8 @@ OVERLAPS = [0, 50, 100]
 CHUNK_SIZES = [200]
 OVERLAPS = [0]
 
-QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
-
+#QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
+QUERY_TEXTS = ["What is redis?"]
 # write CSV headers
 EXPORT_COLS = [
         "Chunk Size", "Overlap", "Embedding Model", "Query", "Vector DB",
@@ -81,7 +81,7 @@ def run_experiment(db_name):
 def main():
     # uncomment out the database you want to test, set up the container if redis or qdrant, and run file!
     #run_experiment('chroma')
-    run_experiment('qdrant')
-    # run_experiment('redis')
+    #run_experiment('qdrant')
+    run_experiment('redis')
 main()
     
