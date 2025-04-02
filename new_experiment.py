@@ -14,19 +14,22 @@ import pandas as pd
 
 # embedding models to be tested
 EMBEDDING_MODELS = [
-    "sentence-transformers/all-MiniLM-L6-v2",
-    "sentence-transformers/all-mpnet-base-v2",
-    "hkunlp/instructor-xl"
+    "nomic-embed-text"
+    #"sentence-transformers/all-MiniLM-L6-v2",
+    #"sentence-transformers/all-mpnet-base-v2"
 ]
 
 # llms to be tested
 LLM_MODELS = ["llama2", "mistral"]
 
 # define chunk sizes and overlaps
-CHUNK_SIZES = [200, 500, 1000]
-OVERLAPS = [0, 50, 100]
+#CHUNK_SIZES = [200, 500, 1000]
+#OVERLAPS = [0, 50, 100]
+CHUNK_SIZES = [200]
+OVERLAPS = [0, 50]
 
-QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
+#QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
+QUERY_TEXTS = ["What is redis?", "What is an AVL tree?"]
 
 # write CSV headers
 EXPORT_COLS = [
@@ -66,8 +69,8 @@ def run_experiment(db_name):
                         print('query:', query)
                         print('embedding_model', embedding_model)
                         print('model', model)
-                        concat_df = pd.DataFrame(columns = EXPORT_COLS, data=[chunk_size, overlap, embedding_model,
-                                                                               query, db_name, run_time, memory, model, query_result])
+                        concat_df = pd.DataFrame(columns = EXPORT_COLS, data=[[chunk_size, overlap, embedding_model,
+                                                                               query, db_name, run_time, memory, model, query_result]])
                         export_df = pd.concat([export_df, concat_df])
         
 
