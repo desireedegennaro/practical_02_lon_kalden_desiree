@@ -4,117 +4,84 @@ import ollama
 import chromadb
 import redis
 from qdrant_client import QdrantClient
-from chroma import store_embeddings as store_chroma, query_chroma
-from redis_driver import store_embedding as store_redis, query_redis
-from qdrant import store_embeddings as store_qdrant, query_qdrant
+from chroma import chroma_chat
+from redis_driver import redis_chat 
+from qdrant import qdrant_chat 
 from sentence_transformers import SentenceTransformer
 from Preprocess import read_data 
+import pandas as pd
 
-# make clients for vector DBs
-chroma_client = chromadb.PersistentClient(path="./chroma_db")
-chroma_collection = chroma_client.get_or_create_collection(name="4300-chroma")
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
-qdrant_client = QdrantClient("localhost", port=6333)
 
 # embedding models to be tested
-embedding_models = [
+EMBEDDING_MODELS = [
+    "nomic-embed-text",
     "sentence-transformers/all-MiniLM-L6-v2",
-    "sentence-transformers/all-mpnet-base-v2",
-    "hkunlp/instructor-xl"
+    "sentence-transformers/all-mpnet-base-v2"
 ]
 
 # llms to be tested
-llm_models = ["llama2", "mistral"]
+LLM_MODELS = ["llama2", "mistral"]
 
 # define chunk sizes and overlaps
-chunk_sizes = [200, 500, 1000]
-overlaps = [0, 50, 100]
+CHUNK_SIZES = [200, 500, 1000]
+OVERLAPS = [0, 50, 100]
 
-query_texts = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
-
-# path to save results
-csv_filename = "experiment_results.csv"
+QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
 
 # write CSV headers
-with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
-    writer = csv.writer(file)
-    writer.writerow([
+EXPORT_COLS = [
         "Chunk Size", "Overlap", "Embedding Model", "Query", "Vector DB",
-        "Query Time (s)", "Retrieved Docs", "LLM Model", "LLM Response"
-    ])
+        "Query Time (s)", "Memory Used", "LLM Model", "LLM Response"
+    ]
 
-# get embedding for the texts
-def get_embedding(text, embed_model):
-    model = SentenceTransformer(embed_model)
-    return model.encode(text).tolist()
 
-def run_experiment():
+# query, model, word_docs, embed_model
+def run_experiment(db_name, embedding_models, llm_models, chunk_sizes, overlaps, query_texts, export_name):
     # loop through chunk sizes and overlaps
+    export_df = pd.DataFrame(columns=EXPORT_COLS)
+
+    if db_name == 'chroma':
+        func = chroma_chat
+    elif db_name == 'qdrant':
+        func = qdrant_chat
+    elif db_name == 'redis':
+        func = redis_chat
+
     for chunk_size in chunk_sizes:
         for overlap in overlaps:
             print(f"\nProcessing chunk size {chunk_size}, overlap {overlap}")
 
-            # preprocess documents
-            #word_docs = read_data(chunk_sizes=[chunk_size], overlaps=[overlap])
-            # Load document chunks
-            word_docs = read_data(chunk_sizes=[chunk_size], overlaps=[overlap])
+            #preprocess
+            word_docs = read_data(chunk_size, overlap)
 
-            # check if embedded in redis already so dont need to store each time
-            existing_keys = set(redis_client.keys("doc:*")) 
-            # already stored
-            new_word_docs = {k: v for k, v in word_docs.items() if f"doc:{k}" not in existing_keys}
-            if not new_word_docs:
-                print("Docs embedded already.")
-            else:
-                print(f"{len(new_word_docs)} left.")
-                word_docs = new_word_docs # only keeping the new docs
+            # going through each model, embedding model, and query for chunk size and overlap
+            for model in llm_models:
+                for embedding_model in embedding_models:
+                    for query in query_texts:
+                        print(func)
+                        query_result, run_time, memory = func(query, model, word_docs, embedding_model)
+                        print('query:', query)
+                        print('embedding_model', embedding_model)
+                        print('model', model)
+                        concat_df = pd.DataFrame(columns = EXPORT_COLS, data=[[chunk_size, overlap, embedding_model,
+                                                                               query, db_name, run_time, memory, model, query_result]])
+                        export_df = pd.concat([export_df, concat_df])
+        
+
+    export_df.to_csv(export_name)
 
 
-            for embed_model in embedding_models:
-                print(f"\nEmbedding model: {embed_model}")
 
-                # store embeddings in each database
-                # for redis the parameters dont match so we need to loop over word docs
-                DOC_PREFIX = "doc:"
-                for key, text in word_docs.items():
-                    clean_text = " ".join(text) if isinstance(text, list) else str(text) 
-                    embedding = get_embedding(clean_text, embed_model)
-                    store_redis(key, clean_text, embedding, DOC_PREFIX, redis_client)
-
-                store_chroma(chroma_client, word_docs, embed_model)
-                store_qdrant(qdrant_client, "qdrant_collection", word_docs, embed_model)
-
-                # run queries
-                for query_text in query_texts:
-                    print(f"\nQuerying: {query_text}")
-
-                    redis_docs = query_redis(redis_client, query_text, embed_model)
-                    chroma_docs = query_chroma(chroma_client, query_text, embed_model)
-                    qdrant_docs = query_qdrant(qdrant_client, query_text, embed_model)
-
-                    print(f"Redis time: {redis_time:.2f}s, docs: {redis_docs}")
-                    print(f"Chroma time: {chroma_time:.2f}s, docs: {chroma_docs}")
-                    print(f"Qdrant time: {qdrant_time:.2f}s, docs: {qdrant_docs}")
-
-                    # send top documents to LLMs
-                    for db_name, docs, query_time in results:
-                        for llm in llm_models:
-                            print(f"\nQuerying LLM: {llm}")
-
-                            response = ollama.chat(
-                                model=llm,
-                                messages=[
-                                    {"role": "system", "content": doc} for doc in chroma_docs
-                                ] + [{"role": "user", "content": query_text}]
-                            )
-                            # write to csv
-                            with open(csv_filename, mode="a", newline="", encoding="utf-8") as file:
-                                writer = csv.writer(file)
-                                writer.writerow([
-                                    chunk_size, overlap, embed_model, query_text, db_name, query_time, "; ".join(docs), llm, response['message'][:200]])
-
-                            print(f"{llm} response: {response['message'][:200]}...")
-
-# run experiment
-if __name__ == "__main__":
-    run_experiment()
+def main():
+    # DIRECTIONS: uncomment out the database you want to test, set up the container if redis or qdrant, and run file!
+    #run_experiment('chroma', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_chroma.csv')
+    #run_experiment('qdrant', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_qdrant.csv')
+    #run_experiment('redis', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_redis.csv')
+    best_embed = ["nomic-embed-text"]
+    best_model = ["mistral"]
+    queries = ["What is Redis?", "What are the benefits of an AVL Tree?"]
+    run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'chroma_chunk_results.csv')
+    #run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'qdrant_chunk_results.csv')
+    #run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'redis_chunk_results.csv')
+main()
+    
