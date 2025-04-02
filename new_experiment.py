@@ -26,9 +26,6 @@ LLM_MODELS = ["llama2", "mistral"]
 CHUNK_SIZES = [200, 500, 1000]
 OVERLAPS = [0, 50, 100]
 
-CHUNK_SIZES = [200]
-OVERLAPS = [0]
-
 QUERY_TEXTS = ["What is redis?", "What is an AVL tree?", "How do document databases like MongoDB differ from relational databases?", "What are tradeoffs between B+ Trees and LSM?"]
 
 # write CSV headers
@@ -39,31 +36,28 @@ EXPORT_COLS = [
 
 
 # query, model, word_docs, embed_model
-def run_experiment(db_name):
+def run_experiment(db_name, embedding_models, llm_models, chunk_sizes, overlaps, query_texts, export_name):
     # loop through chunk sizes and overlaps
     export_df = pd.DataFrame(columns=EXPORT_COLS)
 
     if db_name == 'chroma':
         func = chroma_chat
-        export_name = 'results_chroma.csv'
     elif db_name == 'qdrant':
         func = qdrant_chat
-        export_name = 'results_qdrant.csv'
     elif db_name == 'redis':
         func = redis_chat
-        export_name = 'results_redis.csv'
 
-    for chunk_size in CHUNK_SIZES:
-        for overlap in OVERLAPS:
+    for chunk_size in chunk_sizes:
+        for overlap in overlaps:
             print(f"\nProcessing chunk size {chunk_size}, overlap {overlap}")
 
             #preprocess
             word_docs = read_data(chunk_size, overlap)
 
             # going through each model, embedding model, and query for chunk size and overlap
-            for model in LLM_MODELS:
-                for embedding_model in EMBEDDING_MODELS:
-                    for query in QUERY_TEXTS:
+            for model in llm_models:
+                for embedding_model in embedding_models:
+                    for query in query_texts:
                         print(func)
                         query_result, run_time, memory = func(query, model, word_docs, embedding_model)
                         print('query:', query)
@@ -79,9 +73,15 @@ def run_experiment(db_name):
 
 
 def main():
-    # uncomment out the database you want to test, set up the container if redis or qdrant, and run file!
-    #run_experiment('chroma')
-    #run_experiment('qdrant')
-    run_experiment('redis')
+    # DIRECTIONS: uncomment out the database you want to test, set up the container if redis or qdrant, and run file!
+    #run_experiment('chroma', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_chroma.csv')
+    #run_experiment('qdrant', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_qdrant.csv')
+    #run_experiment('redis', EMBEDDING_MODELS, LLM_MODELS, [200], [0], QUERY_TEXTS, 'results_redis.csv')
+    best_embed = ["nomic-embed-text"]
+    best_model = ["mistral"]
+    queries = ["What is Redis?", "What are the benefits of an AVL Tree?"]
+    run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'chroma_chunk_results.csv')
+    #run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'qdrant_chunk_results.csv')
+    #run_experiment('chroma', best_embed, best_model, CHUNK_SIZES, OVERLAPS, queries, 'redis_chunk_results.csv')
 main()
     
